@@ -5,7 +5,7 @@ export const BingoGameName = 'Bingo' as BfgSupportedGameTitle;
 
 export const BingoGameDefinition: GameDefinition = {
   title: BingoGameName,
-  minNumPlayersForGame: 2,
+  minNumPlayersForGame: 1,
   maxNumPlayersForGame: 8
 };
 
