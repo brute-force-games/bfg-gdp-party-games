@@ -20,9 +20,7 @@
     "paths": {
       "~/*": ["./src/*"],
       "@bfg-engine": ["../bfg-engine/src"],
-      "@bfg-engine/*": ["../bfg-engine/src/*"],
-      "@bfg-ui-components": ["../bfg-ui-components/src"],
-      "@bfg-ui-components/*": ["../bfg-ui-components/src/*"]
+      "@bfg-engine/*": ["../bfg-engine/src/*"]
     }
   },
   "include": ["src/**/*"],
