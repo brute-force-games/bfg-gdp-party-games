@@ -37,6 +37,7 @@ export const BINGO_GAME_TABLE_ACTION_CANCEL_GAME = 'game-table-action-cancel-gam
 
 export const BingoStartGameSchema = z.object({
   actionType: z.literal(BINGO_GAME_TABLE_ACTION_START_GAME),
+  playerSeats: z.array(GameTableSeatSchema),
 })
 
 export type BingoStartGame = z.infer<typeof BingoStartGameSchema>;
@@ -78,10 +79,10 @@ export type BingoGameAction = z.infer<typeof BingoGameActionSchema>;
 
 export const BingoGameStateSchema = z.object({
   // Player cards
-  playerCards: z.record(GameTableSeatSchema, BingoCardSchema),
+  playerCards: z.record(GameTableSeatSchema, BingoCardSchema.nullable()),
   
   // Which numbers are marked on each player's card
-  playerMarks: z.record(GameTableSeatSchema, BingoCardMarksSchema),
+  playerMarks: z.record(GameTableSeatSchema, BingoCardMarksSchema.nullable()),
   
   // Numbers that have been called
   calledNumbers: z.array(BingoNumberSchema),
@@ -175,13 +176,19 @@ const createInitialGameState = (
     throw new Error("Initial game table action must be a host start game");
   }
 
-  // Generate cards for all possible players
-  const playerCards: Record<GameTableSeat, BingoCard> = {} as Record<GameTableSeat, BingoCard>;
-  const playerMarks: Record<GameTableSeat, BingoCardMarks> = {} as Record<GameTableSeat, BingoCardMarks>;
+  // Generate cards for players
+  const playerCards = {} as Record<GameTableSeat, BingoCard | null>;
+  const playerMarks = {} as Record<GameTableSeat, BingoCardMarks | null>;
   
-  PLAYER_SEATS.forEach(seat => {
+  initialGameTableAction.playerSeats.forEach(seat => {
     playerCards[seat] = generateBingoCard();
     playerMarks[seat] = createInitialMarks();
+  });
+
+  const nonPlayerSeats = PLAYER_SEATS.filter(seat => !initialGameTableAction.playerSeats.includes(seat));
+  nonPlayerSeats.forEach(seat => {
+    playerCards[seat] = null;
+    playerMarks[seat] = null;
   });
 
   return {
@@ -194,12 +201,16 @@ const createInitialGameState = (
 
 
 const createInitialBingoGameTableAction = (
-  // _gameTable: NewGameTable,
+  newGameTable: GameTable,
 ): BfgGameSpecificTableAction<BingoGameAction> => {
+
+  const playerSeats = PLAYER_SEATS.filter(seat => newGameTable[seat]);
+
   return {
     actionType: 'game-table-action-host-starts-game',
     gameSpecificAction: {
       actionType: BINGO_GAME_TABLE_ACTION_START_GAME,
+      playerSeats,
     },
     gameTableActionId: BfgGameTableActionId.createId(),
     source: 'game-table-action-source-host',
@@ -243,6 +254,15 @@ const applyBingoGameAction = (
   if (gameAction.actionType === BINGO_GAME_TABLE_ACTION_MARK_NUMBER) {
     const playerCard = gameState.playerCards[gameAction.seat];
     const playerMarks = gameState.playerMarks[gameAction.seat];
+
+    if (!playerCard || !playerMarks) {
+      const summary = `Player ${gameAction.seat} data not found`;
+      return {
+        tablePhase: 'table-phase-error',
+        gameSpecificState: gameState,
+        gameSpecificStateSummary: summary,
+      };
+    }
     
     // Check if the number is on the player's card
     let found = false;
@@ -286,7 +306,15 @@ const applyBingoGameAction = (
 
   if (gameAction.actionType === BINGO_GAME_TABLE_ACTION_CLAIM_BINGO) {
     const playerMarks = gameState.playerMarks[gameAction.seat];
-    
+
+    if (!playerMarks) {
+      const summary = `Player ${gameAction.seat} data not found`;
+      return {
+        tablePhase: 'table-phase-error',
+        gameSpecificState: gameState,
+        gameSpecificStateSummary: summary,
+      };
+    }
     if (checkForBingo(playerMarks)) {
       const summary = `Player ${gameAction.seat} got BINGO and wins!`;
 

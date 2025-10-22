@@ -38,9 +38,14 @@ export const BingoRepresentation = (props: BingoRepresentationProps) => {
   const myCard = gameState.playerCards[myPlayerSeat];
   const myMarks = gameState.playerMarks[myPlayerSeat];
 
-  const getBingoLetter = (col: number): string => {
-    return ['B', 'I', 'N', 'G', 'O'][col];
-  };
+  if (!myCard || !myMarks) {
+    return (
+      <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+        <h2>Your Bingo Card</h2>
+        <div>Player data not found</div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
