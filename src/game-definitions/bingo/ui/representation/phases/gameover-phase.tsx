@@ -1,0 +1,19 @@
+import { BingoGameState } from "~/game-definitions/bingo/engine/bingo-engine-2";
+
+
+interface GameOverPhaseProps {
+  gameState: BingoGameState;
+}
+
+export const GameOverPhase = (props: GameOverPhaseProps) => {
+  const { gameState } = props;
+
+  return (
+    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+      <h2>Game Over!</h2>
+      <div style={{ fontSize: '18px', marginTop: '10px' }}>
+        {gameState.outcomeSummary}
+      </div>
+    </div>
+  );
+}

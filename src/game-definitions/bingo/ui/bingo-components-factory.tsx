@@ -1,77 +1,9 @@
-import { BfgAllPublicKnowledgeGameEngineComponents, GameHistoryComponentProps, GameHostComponentProps, ObserverComponentProps, PlayerComponentProps } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
-import { Typography } from "@bfg-engine/ui/bfg-ui";
-import { BingoGameState, BingoHostAction, BingoPlayerAction } from "../engine/bingo-engine-2";
-import { HostConfigurationView } from "./representation/phases/configuration/host-configuration-view";
-import { ObserverConfigurationView } from "./representation/phases/configuration/observer-configuration-view";
-import { PlayerConfigurationView } from "./representation/phases/configuration/player-configuration-view";
-
-
-export const BingoObserverComponent = (props: ObserverComponentProps<BingoGameState>) => {
-  // const { observedPlayerProfileId, observedPlayerSeat } = props;
-  // return (
-  //   <BingoRepresentation
-  //     {...props}
-  //     myPlayerSeat={null}
-  //     amICaller={false}
-  //     gameAccessRole="observer-role"
-  //     viewLevel="observer-level"
-  //   />
-    // <div>
-    //   <Typography variant="body1">Bingo Observer Component ({observedPlayerProfileId} {observedPlayerSeat})</Typography>
-    // </div>
-  // );
-
-  if (!props.gameState.isGameStarted) {
-    return (
-      <ObserverConfigurationView
-        {...props}
-      />
-    )
-  }
-}
-
-
-export const BingoPlayerComponent = (props: PlayerComponentProps<BingoGameState, BingoPlayerAction>) => {
-  if (!props.gameState.isGameStarted) {
-    return (
-      <PlayerConfigurationView
-        {...props}
-      />
-    )
-  }
-
-  return (
-    <div>
-      <Typography variant="body1">Bingo Player Component 2</Typography>
-    </div>
-  );
-}
-
-
-export const BingoHostComponent = (props: GameHostComponentProps<BingoGameState, BingoHostAction>) => {
-  if (!props.gameState.isGameStarted) {
-    return (
-      <HostConfigurationView
-        {...props}
-      />
-    )
-  }
-  
-  return (
-    <div>
-      <Typography variant="body1">Bingo Host Component!!</Typography>
-    </div>
-  );
-}
-
-
-export const BingoHistoryComponent = (_props: GameHistoryComponentProps) =>  {
-  return (
-    <div>
-      <Typography variant="body1">Bingo History Component</Typography>
-    </div>
-  );
-}
+// // import { BingoGameAction, BingoGameActionSchema, BingoGameState, BingoGameStateSchema } from "../engine/bingo-engine";
+// import { BingoGameStateSchema, BingoPlayerActionSchema, BingoHostActionSchema } from "../engine/bingo-engine-2";
+// import { BingoRepresentation } from "./bingo-representation";
+// import { BingoInput } from "./bingo-input";
+// import { GameStateActionInputProps, GameStateCombinationRepresentationAndInputProps, GameStateHostComponentProps, GameStateRepresentationProps } from "@bfg-engine/models/game-engine/bfg-game-engines";
+// import { createBingoRepresentationProps } from "./types";
 
 
 // export const createBingoRepresentation = (
@@ -143,15 +75,3 @@ export const BingoHistoryComponent = (_props: GameHistoryComponentProps) =>  {
 //     />
 //   )
 // }
-
-
-export const BingoGameComponents: BfgAllPublicKnowledgeGameEngineComponents<
-  BingoGameState,
-  BingoPlayerAction,
-  BingoHostAction
-> = {
-  ObserverComponent: BingoObserverComponent,
-  PlayerComponent: BingoPlayerComponent,
-  HostComponent: BingoHostComponent,
-  HistoryComponent: BingoHistoryComponent,
-}

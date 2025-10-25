@@ -3,12 +3,45 @@
 
 import { registerGame } from "@bfg-engine";
 import { BingoGameName, BingoGameDefinition } from "./game-definitions/bingo/game-box";
-import { BingoGameStateProcessor } from "./game-definitions/bingo/engine/bingo-engine";
+import { BingoGameStateSchema, BingoPlayerActionSchema, BingoHostAction, BingoPlayerAction, BingoGameState, BingoGameProcessor } from "./game-definitions/bingo/engine/bingo-engine-2";
+import { BingoHostActionSchema } from "./game-definitions/bingo/engine/bingo-engine-2";
+import { BfgAllPublicKnowledgeGameEngineComponents } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
+import { BfgGameEngineMetadata } from "@bfg-engine/models/bfg-game-engines";
+import { BingoHistoryComponent, BingoHostComponent, BingoObserverComponent, BingoPlayerComponent } from "./game-definitions/bingo/ui/bingo-components";
+import { createJsonZodObjectDataEncoder } from "@bfg-engine/models/game-engine/encoders";
+
+
+
+const BingoGameComponents: BfgAllPublicKnowledgeGameEngineComponents<
+  BingoGameState,
+  BingoPlayerAction,
+  BingoHostAction
+> = {
+  ObserverComponent: BingoObserverComponent,
+  PlayerComponent: BingoPlayerComponent,
+  HostComponent: BingoHostComponent,
+  HistoryComponent: BingoHistoryComponent,
+}
+
 
 // Create metadata objects with game definitions
-const BingoGameMetadata = {
+const BingoGameMetadata: BfgGameEngineMetadata<BingoGameState, BingoPlayerAction, BingoHostAction> = {
+  gameTitle: BingoGameName,
   definition: BingoGameDefinition,
-  processor: BingoGameStateProcessor
+
+  // gameSpecificStateSchema: BingoGameStateSchema,
+  // playerActionSchema: BingoPlayerActionSchema,
+  // hostActionSchema: BingoHostActionSchema,
+
+  gameSpecificStateEncoder: createJsonZodObjectDataEncoder(BingoGameStateSchema),
+  playerActionEncoder: createJsonZodObjectDataEncoder(BingoPlayerActionSchema),
+  hostActionEncoder: createJsonZodObjectDataEncoder(BingoHostActionSchema),
+
+  engine: BingoGameProcessor,
+  components: BingoGameComponents,
+  
+  // processor: BingoGameStateProcessor
+  // engine: BingoGameStateEngine
 };
 
 /**

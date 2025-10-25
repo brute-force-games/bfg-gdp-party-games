@@ -4,10 +4,10 @@ import {
   BINGO_GAME_TABLE_ACTION_MARK_NUMBER,
   BINGO_GAME_TABLE_ACTION_CLAIM_BINGO,
   BINGO_GAME_TABLE_ACTION_CANCEL_GAME,
-  BingoGameAction, 
+  BingoPlayerAction, 
   BingoGameState,
   BingoNumber
-} from "../engine/bingo-engine";
+} from "../engine/bingo-engine-2";
 import { Button } from "@bfg-engine/ui/bfg-ui";
 import { useState } from "react";
 
@@ -15,8 +15,8 @@ import { useState } from "react";
 interface BingoInputProps {
   myPlayerSeat: GameTableSeat;
   gameState: BingoGameState;
-  mostRecentAction: BingoGameAction;
-  onGameAction: (gameState: BingoGameState, gameAction: BingoGameAction) => void;
+  mostRecentAction: BingoPlayerAction;
+  onGameAction: (gameState: BingoGameState, gameAction: BingoPlayerAction) => void;
 }
 
 export const BingoInput = (props: BingoInputProps) => {
@@ -35,7 +35,8 @@ export const BingoInput = (props: BingoInputProps) => {
     const numberToCall = Math.floor(Math.random() * 75) + 1;
     
     onGameAction(gameState, { 
-      actionType: BINGO_GAME_TABLE_ACTION_CALL_NUMBER, 
+      playerActionType: BINGO_GAME_TABLE_ACTION_CALL_NUMBER, 
+      source: "player",
       seat: myPlayerSeat,
       calledNumber: numberToCall as BingoNumber,
     });
@@ -43,7 +44,8 @@ export const BingoInput = (props: BingoInputProps) => {
 
   const callSpecificNumber = () => {
     onGameAction(gameState, { 
-      actionType: BINGO_GAME_TABLE_ACTION_CALL_NUMBER, 
+      playerActionType: BINGO_GAME_TABLE_ACTION_CALL_NUMBER, 
+      source: "player",
       seat: myPlayerSeat,
       calledNumber: selectedNumber as BingoNumber,
     });
@@ -51,7 +53,8 @@ export const BingoInput = (props: BingoInputProps) => {
 
   const markNumber = (number: number) => {
     onGameAction(gameState, { 
-      actionType: BINGO_GAME_TABLE_ACTION_MARK_NUMBER,
+      playerActionType: BINGO_GAME_TABLE_ACTION_MARK_NUMBER,
+      source: "player",
       seat: myPlayerSeat,
       markedNumber: number as BingoNumber,
     });
@@ -66,14 +69,16 @@ export const BingoInput = (props: BingoInputProps) => {
 
   const claimBingo = () => {
     onGameAction(gameState, { 
-      actionType: BINGO_GAME_TABLE_ACTION_CLAIM_BINGO,
+      playerActionType: BINGO_GAME_TABLE_ACTION_CLAIM_BINGO,
+      source: "player",
       seat: myPlayerSeat,
     });
   }
 
   const cancelGame = () => {
     onGameAction(gameState, {
-      actionType: BINGO_GAME_TABLE_ACTION_CANCEL_GAME,
+      playerActionType: BINGO_GAME_TABLE_ACTION_CANCEL_GAME,
+      source: "player",
       seat: myPlayerSeat,
       cancellationReason: `Game cancelled by ${myPlayerSeat}`,
     });
@@ -84,15 +89,19 @@ export const BingoInput = (props: BingoInputProps) => {
 
   // Get all unmarked numbers on my card
   const unmarkedNumbers: number[] = [];
-  for (let row = 0; row < 5; row++) {
-    for (let col = 0; col < 5; col++) {
-      const number = myCard[row][col];
-      const isMarked = myMarks[row][col];
-      if (number !== 0 && !isMarked && gameState.calledNumbers.includes(number)) {
-        unmarkedNumbers.push(number);
+  
+  if (myCard && myMarks) {
+    for (let row = 0; row < 5; row++) {
+      for (let col = 0; col < 5; col++) {
+        const number = myCard[row][col];
+        const isMarked = myMarks[row][col];
+        if (number !== 0 && !isMarked && gameState.calledNumbers.includes(number)) {
+          unmarkedNumbers.push(number);
+        }
       }
     }
   }
+
 
   return (
     <div style={{ padding: '20px', borderTop: '2px solid #ddd', fontFamily: 'Arial, sans-serif' }}>
