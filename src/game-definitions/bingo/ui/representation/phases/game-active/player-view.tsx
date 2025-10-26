@@ -1,15 +1,11 @@
-import { BingoRepresentationProps } from "../../types";
+import { PlayerComponentProps } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
+import { BingoGameState, BingoPlayerAction } from "~/game-definitions/bingo/engine/bingo-engine-2";
 
 
-export const PlayerView = (props: BingoRepresentationProps) => {
-  const { gameState, myPlayerSeat } = props;
+export const PlayerActiveGameView = ({ gameState, currentPlayerSeat }: PlayerComponentProps<BingoGameState, BingoPlayerAction>) => {
 
-  if (myPlayerSeat === null) {
-    throw new Error("myPlayerSeat cannot be null");
-  }
-
-  const myCard = gameState.playerCards[myPlayerSeat];
-  const myMarks = gameState.playerMarks[myPlayerSeat];
+  const myCard = gameState.playerCards[currentPlayerSeat];
+  const myMarks = gameState.playerMarks[currentPlayerSeat];
 
   if (!myCard || !myMarks) {
     return (

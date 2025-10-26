@@ -12,6 +12,7 @@ import {
 import { ConfigurationSummary } from "../../components/configuration-summary";
 import { PlayerComponentProps } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
 
+
 export const PlayerConfigurationView = ({ 
   gameState,
   currentPlayerSeat,

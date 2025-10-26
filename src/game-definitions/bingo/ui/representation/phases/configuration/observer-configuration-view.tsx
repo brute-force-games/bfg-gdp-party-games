@@ -6,25 +6,9 @@ import { ObserverComponentProps } from "@bfg-engine/models/game-engine/bfg-game-
 import { BingoGameState } from "~/game-definitions/bingo/engine/bingo-engine-2";
 
 
-export const ObserverConfigurationView = ({ 
-  gameState
-}: ObserverComponentProps<BingoGameState>) => {
+export const ObserverConfigurationView = ({ gameState }: ObserverComponentProps<BingoGameState>) => {
 
   const config = gameState.configuration;
-  
-  // const formatCallerSeat = (callerSeat: string) => {
-  //   return callerSeat.replace('seat-', 'Seat ').replace('-', ' ');
-  // };
-
-  // const formatAutoCallInterval = (intervalMs: number) => {
-  //   const seconds = Math.round(intervalMs / 1000);
-  //   return `${intervalMs}ms (${seconds}s)`;
-  // };
-
-  // const formatCallerCandidates = (candidates: string[]): string[] => {
-  //   if (candidates.length === 0) return [];
-  //   return candidates.map(seat => seat.replace('seat-', 'Seat ').replace('-', ' '));
-  // };
 
   return (
     <Stack spacing={3} style={{ maxWidth: '600px', margin: '0 auto', padding: '20px' }}>

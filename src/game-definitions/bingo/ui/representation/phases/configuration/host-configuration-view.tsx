@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import { 
   BingoGameConfiguration, 
   BINGO_GAME_TABLE_ACTION_UPDATE_CONFIGURATION,
+  BINGO_GAME_TABLE_ACTION_HOST_STARTS_GAME,
   BingoUpdateConfiguration,
   AUTO_CALL_INTERVAL_MAX,
   AUTO_CALL_INTERVAL_MIN,
   BingoGameState,
-  BingoHostAction
+  BingoHostAction,
+  BingoHostStartsGame
 } from "~/game-definitions/bingo/engine/bingo-engine-2";
 import { 
   Typography, 
@@ -36,6 +38,7 @@ export const HostConfigurationView = (props: GameHostComponentProps<BingoGameSta
   }, [gameState.configuration]);
 
   const handleConfigurationChange = (field: keyof BingoGameConfiguration, value: any) => {
+    console.log("🎮 HOST CONFIGURATION CHANGE:", field, value);
     setConfiguration(prev => ({
       ...prev,
       [field]: value
@@ -55,13 +58,28 @@ export const HostConfigurationView = (props: GameHostComponentProps<BingoGameSta
       update: configuration
     };
 
-    onHostAction(gameState, updateAction);
+    onHostAction(updateAction);
     setIsDirty(false);
   };
 
   const handleResetConfiguration = () => {
     setConfiguration(gameState.configuration);
     setIsDirty(false);
+  };
+
+  const handleStartGame = () => {
+    if (!onHostAction) {
+      console.error("Cannot start game: missing onHostAction");
+      return;
+    }
+
+    const startGameAction: BingoHostStartsGame = {
+      hostActionType: BINGO_GAME_TABLE_ACTION_HOST_STARTS_GAME,
+      source: 'host',
+      configuration: gameState.configuration
+    };
+
+    onHostAction(startGameAction);
   };
 
   // const handleToggleCallerCandidate = (seat: GameTableSeat, isCandidate: boolean) => {
@@ -106,6 +124,38 @@ export const HostConfigurationView = (props: GameHostComponentProps<BingoGameSta
       <Typography variant="h1" gutterBottom>
         Host Configuration
       </Typography>
+      {/* Start Game Button */}
+      <Card variant="outlined" style={{ border: '2px solid #1976d2' }}>
+        <Stack spacing={2} style={{ padding: '20px' }}>
+          <Typography variant="h5" gutterBottom style={{ color: '#1976d2', fontWeight: 'bold' }}>
+            Ready to Start?
+          </Typography>
+          <Typography variant="body2" style={{ color: '#666' }}>
+            Start the game with the current configuration. All players will be notified and the game will begin.
+          </Typography>
+          <Button 
+            onClick={handleStartGame}
+            variant="contained"
+            color="primary"
+            size="large"
+            fullWidth
+            disabled={isDirty}
+            style={{ 
+              padding: '16px',
+              fontSize: '1.1rem',
+              fontWeight: 'bold',
+              textTransform: 'none'
+            }}
+          >
+            🎮 Start Game
+          </Button>
+          {isDirty && (
+            <Typography variant="caption" style={{ textAlign: 'center', color: '#ed6c02' }}>
+              Please save your configuration changes before starting the game
+            </Typography>
+          )}
+        </Stack>
+      </Card>
       
       {/* Configuration Form */}
       <Card>
@@ -168,12 +218,36 @@ export const HostConfigurationView = (props: GameHostComponentProps<BingoGameSta
           {/* Lose for Failed Bingo Calls Configuration */}
           <FormControl fullWidth>
             <FormLabel>Failed Bingo Penalty</FormLabel>
-            <Stack direction="row" spacing={2} alignItems="center">
+            <Stack 
+              direction="row" 
+              spacing={2} 
+              alignItems="center"
+              onClick={() => handleConfigurationChange('loseForFailedBingoCalls', !configuration.loseForFailedBingoCalls)}
+              style={{
+                cursor: 'pointer',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                border: '2px solid transparent',
+                transition: 'all 0.2s ease-in-out',
+                backgroundColor: configuration.loseForFailedBingoCalls ? '#e3f2fd' : '#f5f5f5',
+                borderColor: configuration.loseForFailedBingoCalls ? '#1976d2' : '#e0e0e0',
+                userSelect: 'none'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = configuration.loseForFailedBingoCalls ? '#bbdefb' : '#eeeeee';
+                e.currentTarget.style.borderColor = configuration.loseForFailedBingoCalls ? '#1565c0' : '#bdbdbd';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = configuration.loseForFailedBingoCalls ? '#e3f2fd' : '#f5f5f5';
+                e.currentTarget.style.borderColor = configuration.loseForFailedBingoCalls ? '#1976d2' : '#e0e0e0';
+              }}
+            >
               <Switch 
                 checked={configuration.loseForFailedBingoCalls} 
                 onChange={(e) => handleConfigurationChange('loseForFailedBingoCalls', e.target.checked)}
+                style={{ pointerEvents: 'none' }}
               />
-              <Typography variant="body1">
+              <Typography variant="body1" style={{ fontWeight: '500' }}>
                 {configuration.loseForFailedBingoCalls ? 'Enabled' : 'Disabled'}
               </Typography>
             </Stack>

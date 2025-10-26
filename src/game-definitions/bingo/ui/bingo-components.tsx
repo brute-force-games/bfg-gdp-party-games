@@ -4,23 +4,11 @@ import { BingoGameState, BingoHostAction, BingoPlayerAction } from "../engine/bi
 import { HostConfigurationView } from "./representation/phases/configuration/host-configuration-view";
 import { ObserverConfigurationView } from "./representation/phases/configuration/observer-configuration-view";
 import { PlayerConfigurationView } from "./representation/phases/configuration/player-configuration-view";
+import { PlayerActiveGameView } from "./representation/phases/game-active/player-view";
+import { ObserverActiveGameView } from "./representation/phases/game-active/observer-view";
 
 
 export const BingoObserverComponent = (props: ObserverComponentProps<BingoGameState>) => {
-  // const { observedPlayerProfileId, observedPlayerSeat } = props;
-  // return (
-  //   <BingoRepresentation
-  //     {...props}
-  //     myPlayerSeat={null}
-  //     amICaller={false}
-  //     gameAccessRole="observer-role"
-  //     viewLevel="observer-level"
-  //   />
-    // <div>
-    //   <Typography variant="body1">Bingo Observer Component ({observedPlayerProfileId} {observedPlayerSeat})</Typography>
-    // </div>
-  // );
-
   if (!props.gameState.isGameStarted) {
     return (
       <ObserverConfigurationView
@@ -28,6 +16,20 @@ export const BingoObserverComponent = (props: ObserverComponentProps<BingoGameSt
       />
     )
   }
+
+  if (!props.gameState.isGameOver) {
+    return (
+      <ObserverActiveGameView
+        {...props}
+      />
+    )
+  }
+
+  return (
+    <div>
+      <Typography variant="body1">Game over - Bingo Observer Component!!</Typography>
+    </div>
+  );
 }
 
 
@@ -40,9 +42,18 @@ export const BingoPlayerComponent = (props: PlayerComponentProps<BingoGameState,
     )
   }
 
+
+  if (!props.gameState.isGameOver) {
+    return (
+      <PlayerActiveGameView
+        {...props}
+      />
+    )
+  }
+
   return (
     <div>
-      <Typography variant="body1">Bingo Player Component 2</Typography>
+      <Typography variant="body1">Game over - Bingo Player Component!!</Typography>
     </div>
   );
 }
@@ -57,9 +68,15 @@ export const BingoHostComponent = (props: GameHostComponentProps<BingoGameState,
     )
   }
   
+  if (!props.gameState.isGameOver) {
+    return (
+      <div>Host - Bingo game in progress</div>
+    )
+  }
+
   return (
     <div>
-      <Typography variant="body1">Bingo Host Component!!</Typography>
+      <Typography variant="body1">Game over - Bingo Host Component!!</Typography>
     </div>
   );
 }

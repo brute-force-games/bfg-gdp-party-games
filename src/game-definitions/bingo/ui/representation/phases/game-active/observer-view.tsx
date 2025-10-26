@@ -1,8 +1,8 @@
-import { BingoRepresentationProps } from "../../types";
+import { ObserverComponentProps } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
+import { BingoGameState } from "~/game-definitions/bingo/engine/bingo-engine-2";
 
 
-export const ObserverView = (props: BingoRepresentationProps) => {
-  const { gameState } = props;
+export const ObserverActiveGameView = ({ gameState }: ObserverComponentProps<BingoGameState>) => {
 
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
