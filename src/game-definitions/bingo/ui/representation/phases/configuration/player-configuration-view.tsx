@@ -3,7 +3,7 @@ import {
   BingoGameState,
   BingoPlayerAction,
   BingoUpdateCallerCandidate,
-} from "~/game-definitions/bingo/engine/bingo-engine-2";
+} from "~/game-definitions/bingo/engine/bingo-engine";
 import { 
   Typography, 
   Stack, 

@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { 
   BingoGameConfiguration, 
   BINGO_GAME_TABLE_ACTION_UPDATE_CONFIGURATION,
@@ -8,8 +7,10 @@ import {
   AUTO_CALL_INTERVAL_MIN,
   BingoGameState,
   BingoHostAction,
-  BingoHostStartsGame
-} from "~/game-definitions/bingo/engine/bingo-engine-2";
+  BingoHostStartsGame,
+  DEFAULT_BINGO_GAME_CONFIGURATION,
+  BingoCallerId
+} from "~/game-definitions/bingo/engine/bingo-engine";
 import { 
   Typography, 
   Card, 
@@ -19,52 +20,85 @@ import {
   FormHelperText,
   Switch,
   Button,
-  Select,
-  Option,
   Slider,
-  Alert,
-  Divider
+  Divider,
+  Chip
 } from "@bfg-engine/ui/bfg-ui";
 import { GameHostComponentProps } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
 
 export const HostConfigurationView = (props: GameHostComponentProps<BingoGameState, BingoHostAction>) => {
   const { gameState, onHostAction } = props;
-  const [configuration, setConfiguration] = useState<BingoGameConfiguration>(gameState.configuration);
-  const [isDirty, setIsDirty] = useState(false);
+  const configuration = gameState.configuration;
+  const canStartGame = configuration.canStartGame;
 
-  useEffect(() => {
-    setConfiguration(gameState.configuration);
-    setIsDirty(false);
-  }, [gameState.configuration]);
 
   const handleConfigurationChange = (field: keyof BingoGameConfiguration, value: any) => {
-    console.log("🎮 HOST CONFIGURATION CHANGE:", field, value);
-    setConfiguration(prev => ({
-      ...prev,
+    // if (!onHostAction) {
+    //   console.error("Cannot apply configuration: missing onHostAction");
+    //   return;
+    // }
+
+    const updatedConfiguration = {
+      ...configuration,
       [field]: value
-    }));
-    setIsDirty(true);
+    };
+    
+    const updateAction: BingoUpdateConfiguration = {
+      hostActionType: BINGO_GAME_TABLE_ACTION_UPDATE_CONFIGURATION,
+      source: 'host',
+      update: updatedConfiguration
+    };
+    
+    onHostAction(updateAction);
   };
 
-  const handleSaveConfiguration = () => {
+  const handleCallerSelect = (seat: BingoCallerId) => {
+    const updatedConfiguration: BingoGameConfiguration = {
+      ...configuration,
+      callerSeat: seat,
+    };
+    
+    const updateAction: BingoUpdateConfiguration = {
+      hostActionType: BINGO_GAME_TABLE_ACTION_UPDATE_CONFIGURATION,
+      source: 'host',
+      update: updatedConfiguration
+    };
+
+    onHostAction(updateAction);
+  };
+
+  const handleClearCallerCandidates = () => {
+    // handleConfigurationChange('callerSeat', undefined);
+    console.log('🎮 HOST SENDING CALLER CLEAR');
+
+    const updatedConfiguration: BingoGameConfiguration = {
+      ...configuration,
+      callerSeat: undefined,
+      callerCandidates: [],
+    };
+    
+    const updateAction: BingoUpdateConfiguration = {
+      hostActionType: BINGO_GAME_TABLE_ACTION_UPDATE_CONFIGURATION,
+      source: 'host',
+      update: updatedConfiguration
+    };
+
+    onHostAction(updateAction);
+  };
+
+  const handleResetConfiguration = () => {
     if (!onHostAction) {
-      console.error("Cannot save configuration: missing onHostAction or myPlayerSeat");
+      console.error("Cannot reset configuration: missing onHostAction");
       return;
     }
 
     const updateAction: BingoUpdateConfiguration = {
       hostActionType: BINGO_GAME_TABLE_ACTION_UPDATE_CONFIGURATION,
       source: 'host',
-      update: configuration
+      update: DEFAULT_BINGO_GAME_CONFIGURATION
     };
 
     onHostAction(updateAction);
-    setIsDirty(false);
-  };
-
-  const handleResetConfiguration = () => {
-    setConfiguration(gameState.configuration);
-    setIsDirty(false);
   };
 
   const handleStartGame = () => {
@@ -82,23 +116,10 @@ export const HostConfigurationView = (props: GameHostComponentProps<BingoGameSta
     onHostAction(startGameAction);
   };
 
-  // const handleToggleCallerCandidate = (seat: GameTableSeat, isCandidate: boolean) => {
-  //   if (!onGameAction || !myPlayerSeat) {
-  //     console.error("Cannot update caller candidate: missing onGameAction or myPlayerSeat");
-  //     return;
-  //   }
-
-  //   const updateAction: BingoUpdateCallerCandidate = {
-  //     actionType: BINGO_GAME_TABLE_ACTION_UPDATE_CALLER_CANDIDATE,
-  //     playerSeat: seat,
-  //     isCandidate
-  //   };
-
-  //   onGameAction(gameState, updateAction);
-  // };
-
   const formatCallerSeat = (callerSeat: string | undefined) => {
-    if (!callerSeat) return "Any player";
+    if (!callerSeat) {
+      return "Caller not set";
+    }
     return callerSeat.replace('p', 'Player ');
   };
 
@@ -112,23 +133,14 @@ export const HostConfigurationView = (props: GameHostComponentProps<BingoGameSta
     return candidates.map(seat => seat.replace('p', 'Player '));
   };
 
-  // const availableSeats: GameTableSeat[] = [
-  //   'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8'
-  // ];
-  // const playerSeats = gameState.table.playerSeats;
-  // const availableSeats = playerSeats.filter(seat => seat !== 'auto-caller');
   const callerCandidates = configuration.callerCandidates;
 
   return (
     <Stack spacing={3} style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
-      <Typography variant="h1" gutterBottom>
-        Host Configuration
-      </Typography>
-      {/* Start Game Button */}
       <Card variant="outlined" style={{ border: '2px solid #1976d2' }}>
         <Stack spacing={2} style={{ padding: '20px' }}>
           <Typography variant="h5" gutterBottom style={{ color: '#1976d2', fontWeight: 'bold' }}>
-            Ready to Start?
+            Ready to Start Bingo?
           </Typography>
           <Typography variant="body2" style={{ color: '#666' }}>
             Start the game with the current configuration. All players will be notified and the game will begin.
@@ -139,7 +151,7 @@ export const HostConfigurationView = (props: GameHostComponentProps<BingoGameSta
             color="primary"
             size="large"
             fullWidth
-            disabled={isDirty}
+            disabled={!canStartGame}
             style={{ 
               padding: '16px',
               fontSize: '1.1rem',
@@ -149,11 +161,6 @@ export const HostConfigurationView = (props: GameHostComponentProps<BingoGameSta
           >
             🎮 Start Game
           </Button>
-          {isDirty && (
-            <Typography variant="caption" style={{ textAlign: 'center', color: '#ed6c02' }}>
-              Please save your configuration changes before starting the game
-            </Typography>
-          )}
         </Stack>
       </Card>
       
@@ -162,23 +169,74 @@ export const HostConfigurationView = (props: GameHostComponentProps<BingoGameSta
         <Stack spacing={3} style={{ padding: '20px' }}>
           {/* Caller Seat Configuration */}
           <FormControl fullWidth>
-            <FormLabel>Designated Caller</FormLabel>
-            <Select
-              value={configuration.callerSeat || ''}
-              onChange={(e) => handleConfigurationChange('callerSeat', e.target.value || undefined)}
-            >
-              {callerCandidates.map(seat => (
-                <Option key={seat} value={seat}>
-                  {formatCallerSeat(seat)}
-                </Option>
-              ))}
-            </Select>
-            <FormHelperText>
+            <FormLabel>Select Designated Caller</FormLabel>
+            <Stack spacing={2}>
+              
+              <Stack direction="row" spacing={1} style={{ flexWrap: 'wrap', gap: '8px' }}>
+                {callerCandidates.length > 0 ? (
+                  callerCandidates.map((seat) => {
+                    const isSelected = configuration.callerSeat === seat;
+                    
+                    return (
+                      <Chip
+                        key={seat}
+                        label={seat.replace('p', 'Player ')}
+                        variant={isSelected ? "filled" : "outlined"}
+                        color={isSelected ? "primary" : "default"}
+                        clickable={true}
+                        onClick={() => handleCallerSelect(seat)}
+                        style={{
+                          transition: 'all 0.2s ease-in-out',
+                          transform: isSelected ? 'scale(1.05)' : 'scale(1)',
+                          boxShadow: isSelected ? '0 2px 8px rgba(25, 118, 210, 0.3)' : 'none'
+                        }}
+                      />
+                    );
+                  })
+                ) : (
+                  <Typography variant="body2" color="secondary" style={{ fontStyle: 'italic', padding: '8px 0' }}>
+                    No caller candidates available
+                  </Typography>
+                )}
+                {configuration.callerSeat && (
+                  <button
+                    type="button"
+                    onClick={handleClearCallerCandidates}
+                    style={{ 
+                      fontSize: '0.75rem',
+                      fontWeight: '500',
+                      color: '#1976d2',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      alignSelf: 'center'
+                    }}
+                  >
+                    Clear Selection
+                  </button>
+                )}
+              </Stack>
+              
+              {configuration.callerSeat && (
+                <Typography variant="caption" color="primary" style={{ marginTop: '4px', lineHeight: '1.4' }}>
+                  {formatCallerSeat(configuration.callerSeat)} is selected as the designated caller
+                </Typography>
+              )}
+              
+              {!configuration.callerSeat && callerCandidates.length > 0 && (
+                <Typography variant="caption" color="secondary" style={{ marginTop: '4px', lineHeight: '1.4' }}>
+                  Click a chip to select a designated caller, or leave unselected to allow any player to call
+                </Typography>
+              )}
+            </Stack>
+            {/* <FormHelperText>
               {configuration.callerSeat 
                 ? "Only this player can call numbers" 
                 : "Any player can call numbers"
               }
-            </FormHelperText>
+            </FormHelperText> */}
           </FormControl>
 
           {/* Auto Call Interval Configuration */}
@@ -291,25 +349,21 @@ export const HostConfigurationView = (props: GameHostComponentProps<BingoGameSta
         </Stack>
       </Card> */}
 
-      {/* Action Buttons */}
+      {/* Reset Button */}
       <Card variant="outlined">
         <Stack spacing={2} style={{ padding: '20px' }}>
-          <Stack direction="row" spacing={2} justifyContent="flex-end">
+          <Stack direction="row" spacing={2} justifyContent="center">
             <Button 
               onClick={handleResetConfiguration}
-              disabled={!isDirty}
               variant="outlined"
+              color="secondary"
             >
-              Reset
-            </Button>
-            <Button 
-              onClick={handleSaveConfiguration}
-              disabled={!isDirty}
-              variant="contained"
-            >
-              Save Configuration
+              Reset to Defaults
             </Button>
           </Stack>
+          <Typography variant="caption" color="secondary" style={{ textAlign: 'center' }}>
+            Configuration changes are applied automatically. Use Reset to restore original settings.
+          </Typography>
         </Stack>
       </Card>
 
@@ -325,12 +379,6 @@ export const HostConfigurationView = (props: GameHostComponentProps<BingoGameSta
           You must be seated to modify configuration
         </Alert>
       )} */}
-
-      {isDirty && (
-        <Alert severity="info">
-          You have unsaved changes
-        </Alert>
-      )}
 
       {/* Current Configuration Summary */}
       <Card variant="outlined" style={{ backgroundColor: '#f8f9fa' }}>

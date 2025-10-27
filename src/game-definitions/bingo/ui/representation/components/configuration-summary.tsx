@@ -1,5 +1,5 @@
 import { Card, Stack, Typography, Chip } from "@bfg-engine";
-import { BingoGameConfiguration } from "../../../engine/bingo-engine";
+import { BingoGameConfiguration } from "~/game-definitions/bingo/engine/bingo-engine";
 
 
 interface ConfigurationSummaryProps {
@@ -10,8 +10,9 @@ export const ConfigurationSummary = ({
   config
 }: ConfigurationSummaryProps) => {
 
-  const formatCallerSeat = (callerSeat: string) => {
-    return callerSeat.replace('seat-', 'Seat ').replace('-', ' ');
+  const formatCallerSeat = (callerSeat: string | undefined) => {
+    if (!callerSeat) return "No caller designated";
+    return `Caller: ${callerSeat.replace('seat-', 'Seat ').replace('-', ' ')}`;
   };
 
   const formatAutoCallInterval = (intervalMs: number) => {

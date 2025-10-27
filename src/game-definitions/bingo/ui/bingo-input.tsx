@@ -7,7 +7,7 @@ import {
   BingoPlayerAction, 
   BingoGameState,
   BingoNumber
-} from "../engine/bingo-engine-2";
+} from "../engine/bingo-engine";
 import { Button } from "@bfg-engine/ui/bfg-ui";
 import { useState } from "react";
 

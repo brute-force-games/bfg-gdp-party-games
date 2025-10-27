@@ -3,8 +3,8 @@
 
 import { registerGame } from "@bfg-engine";
 import { BingoGameName, BingoGameDefinition } from "./game-definitions/bingo/game-box";
-import { BingoGameStateSchema, BingoPlayerActionSchema, BingoHostAction, BingoPlayerAction, BingoGameState, BingoGameProcessor } from "./game-definitions/bingo/engine/bingo-engine-2";
-import { BingoHostActionSchema } from "./game-definitions/bingo/engine/bingo-engine-2";
+import { BingoGameStateSchema, BingoPlayerActionSchema, BingoHostAction, BingoPlayerAction, BingoGameState, BingoGameProcessor } from "./game-definitions/bingo/engine/bingo-engine";
+import { BingoHostActionSchema } from "./game-definitions/bingo/engine/bingo-engine";
 import { BfgAllPublicKnowledgeGameEngineComponents } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
 import { BfgGameEngineMetadata } from "@bfg-engine/models/bfg-game-engines";
 import { BingoHistoryComponent, BingoHostComponent, BingoObserverComponent, BingoPlayerComponent } from "./game-definitions/bingo/ui/bingo-components";

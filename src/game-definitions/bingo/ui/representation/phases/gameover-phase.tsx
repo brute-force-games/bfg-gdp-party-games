@@ -1,4 +1,4 @@
-import { BingoGameState } from "~/game-definitions/bingo/engine/bingo-engine-2";
+import { BingoGameState } from "~/game-definitions/bingo/engine/bingo-engine";
 
 
 interface GameOverPhaseProps {
