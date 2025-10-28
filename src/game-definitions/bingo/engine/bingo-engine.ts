@@ -1,7 +1,5 @@
 import { z } from "zod";
-import { 
-  GameTableSeatSchema,
-  GameTableActionResult} from "@bfg-engine";
+import { GameTableSeatSchema, GameTableActionResult, } from "@bfg-engine";
 import { PLAYER_SEATS, GameTableSeat } from "@bfg-engine/models/game-table/game-table";
 import { BingoGameName } from "../game-box";
 import { GameTable } from "@bfg-engine/models/game-table/game-table";
@@ -33,16 +31,20 @@ export const BingoCallerIdSchema = GameTableSeatSchema;
 export type BingoCallerId = z.infer<typeof BingoCallerIdSchema>;
 
 
-export const AUTO_CALL_INTERVAL_MIN = 1000;
-export const AUTO_CALL_INTERVAL_MAX = 60000;
+export const MIN_CALL_INTERVAL_MIN = 1000;
+export const MIN_CALL_INTERVAL_MAX = 60000;
 
 
 export const BingoGameConfigurationSchema = z.object({
   callerSeat: BingoCallerIdSchema.optional(),
+  callerHasBingoCard: z.boolean(),
+  minCallIntervalInMs: z.number()
+    .int().min(MIN_CALL_INTERVAL_MIN).max(MIN_CALL_INTERVAL_MAX),
+
   callerCandidates: z.array(BingoCallerIdSchema),
-  autoCallIntervalInMs: z.number()
-    .int().min(AUTO_CALL_INTERVAL_MIN).max(AUTO_CALL_INTERVAL_MAX),
-  loseForFailedBingoCalls: z.boolean().default(false).optional(),
+
+  showCalledBingoNumberHints: z.boolean(),
+  loseForFailedBingoCalls: z.boolean(),
 
   canStartGame: z.boolean(),
 }).describe('Bingo game configuration');
@@ -63,7 +65,7 @@ export const BingoGameStateSchema = BfgPublicGameImplStateSchema.extend({
   
   // Numbers that have been called
   calledNumbers: z.array(BingoNumberSchema),
-  lastCalledNumberTimestamp: z.number().optional(),
+  lastCalledNumberTimestamp: z.number(),
 
   eliminatedPlayers: z.array(GameTableSeatSchema),
   
@@ -166,8 +168,10 @@ export type BingoHostAction = z.infer<typeof BingoHostActionSchema>;
 
 export const DEFAULT_BINGO_GAME_CONFIGURATION: BingoGameConfiguration = {
   callerSeat: undefined,
+  callerHasBingoCard: true,
   callerCandidates: [],
-  autoCallIntervalInMs: 5000,
+  minCallIntervalInMs: 5000,
+  showCalledBingoNumberHints: true,
   loseForFailedBingoCalls: false,
   canStartGame: false,
 };
@@ -287,9 +291,11 @@ const createInitialGameState = (
     playerMarks[seat] = null;
   });
 
+  const lastCalledNumberTimestamp = Date.now();
   return {
     configuration: DEFAULT_BINGO_GAME_CONFIGURATION,
     nextToActPlayers: playerSeats,
+    lastCalledNumberTimestamp,
     playerCards,
     playerMarks,
     calledNumbers: [],
@@ -304,6 +310,32 @@ const canStartGame = (configuration: BingoGameConfiguration): boolean => {
   return configuration.callerSeat !== undefined;
 }
 
+const validateCallerBingoCardConfiguration = (
+  configuration: BingoGameConfiguration,
+  activePlayerSeats: GameTableSeat[]
+): BingoGameConfiguration => {
+  // If there are fewer than 2 players, caller must have a bingo card
+  if (activePlayerSeats.length < 2) {
+    return {
+      ...configuration,
+      callerHasBingoCard: true
+    };
+  }
+  
+  return configuration;
+}
+
+export const isCallerBingoCardControlDisabled = (
+  gameState: BingoGameState
+): boolean => {
+  // Get active players from game state (those with non-null cards)
+  const activePlayerSeats = Object.entries(gameState.playerCards)
+    .filter(([_, card]) => card !== null)
+    .map(([seat, _]) => seat as GameTableSeat);
+  
+  return activePlayerSeats.length < 2;
+}
+
 
 const applyBingoHostAction = async (
   _tableState: GameTable,
@@ -313,10 +345,15 @@ const applyBingoHostAction = async (
 
   if (gameAction.hostActionType === BINGO_GAME_TABLE_ACTION_UPDATE_CONFIGURATION) {
     console.log("HOST ACTION - UPDATE CONFIGURATION - GAME ACTION", gameAction);
-    const updatedConfiguration = {
+    const activePlayerSeats = getActivePlayerSeatsForGameTable(_tableState);
+    
+    let updatedConfiguration = {
       ...gameState.configuration,
       ...gameAction.update,
     };
+
+    // Validate caller bingo card configuration based on player count
+    updatedConfiguration = validateCallerBingoCardConfiguration(updatedConfiguration, activePlayerSeats);
 
     updatedConfiguration.canStartGame = canStartGame(updatedConfiguration);
     if (updatedConfiguration.callerSeat && 
@@ -405,8 +442,25 @@ const applyBingoPlayerAction = async (
       };
     }
 
+    // Check if enough time has passed since the last call
+    const currentTime = Date.now();
+    const timeSinceLastCall = currentTime - gameState.lastCalledNumberTimestamp;
+    const minInterval = gameState.configuration.minCallIntervalInMs;
+
+    if (timeSinceLastCall < minInterval) {
+      const remainingTime = Math.ceil((minInterval - timeSinceLastCall) / 1000);
+      const summary = `Call too soon! Please wait ${remainingTime} more second(s) before calling the next number`;
+      console.warn(summary);
+
+      return {
+        tablePhase: 'table-phase-game-in-progress',
+        gameSpecificState: gameState,
+        gameSpecificStateSummary: summary,
+      };
+    }
+
     const summary = `Player ${gameAction.seat} called number ${gameAction.calledNumber}`;
-    const lastCalledNumberTimestamp = Date.now();
+    const lastCalledNumberTimestamp = currentTime;
 
     return {
       tablePhase: 'table-phase-game-in-progress',

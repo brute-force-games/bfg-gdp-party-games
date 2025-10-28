@@ -1,5 +1,5 @@
 import { PlayerComponentProps } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
-import { BingoGameState, BingoPlayerAction, BINGO_GAME_TABLE_ACTION_CALL_NUMBER, BINGO_GAME_TABLE_ACTION_CLAIM_BINGO, BingoNumber } from "~/game-definitions/bingo/engine/bingo-engine";
+import { BingoGameState, BingoPlayerAction, BINGO_GAME_TABLE_ACTION_CALL_NUMBER, BINGO_GAME_TABLE_ACTION_CLAIM_BINGO, BINGO_GAME_TABLE_ACTION_MARK_NUMBER, BingoNumber } from "~/game-definitions/bingo/engine/bingo-engine";
 import { CalledBingoNumbersGrid } from "../../components/called-bingo-numbers-grid";
 import { BingoCard } from "../../components/bingo-card";
 import { Container, Button, Box, Stack } from "@bfg-engine/ui/bfg-ui";
@@ -29,6 +29,15 @@ export const PlayerActiveGameView = ({ gameState, currentPlayerSeat, onPlayerAct
       playerActionType: BINGO_GAME_TABLE_ACTION_CLAIM_BINGO,
       source: "player",
       seat: currentPlayerSeat,
+    });
+  };
+
+  const handleMarkNumber = (number: number) => {
+    onPlayerAction({
+      playerActionType: BINGO_GAME_TABLE_ACTION_MARK_NUMBER,
+      source: "player",
+      seat: currentPlayerSeat,
+      markedNumber: number as BingoNumber,
     });
   };
 
@@ -69,7 +78,19 @@ export const PlayerActiveGameView = ({ gameState, currentPlayerSeat, onPlayerAct
               marks={myMarks}
               calledNumbers={gameState.calledNumbers}
               gridSize="medium"
+              showCalledBingoNumberHints={gameState.configuration.showCalledBingoNumberHints}
+              onMarkNumber={handleMarkNumber}
             />
+            
+            {/* Instructions */}
+            <Box style={{ 
+              textAlign: 'center', 
+              marginTop: '8px',
+              fontSize: '12px',
+              color: '#666'
+            }}>
+              💡 Click on called numbers to mark them
+            </Box>
             
             {/* BINGO Declaration Button or Elimination Message */}
             <Box style={{ 
@@ -143,6 +164,7 @@ export const PlayerActiveGameView = ({ gameState, currentPlayerSeat, onPlayerAct
               onCallNumber={handleCallNumber}
               canCallNumbers={canCallNumbers}
               gridSize="small"
+              autocallInterval={gameState.configuration.minCallIntervalInMs}
             />
           </Box>
         </Stack>

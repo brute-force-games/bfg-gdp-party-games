@@ -3,13 +3,14 @@ import {
   BINGO_GAME_TABLE_ACTION_UPDATE_CONFIGURATION,
   BINGO_GAME_TABLE_ACTION_HOST_STARTS_GAME,
   BingoUpdateConfiguration,
-  AUTO_CALL_INTERVAL_MAX,
-  AUTO_CALL_INTERVAL_MIN,
+  MIN_CALL_INTERVAL_MAX,
+  MIN_CALL_INTERVAL_MIN,
   BingoGameState,
   BingoHostAction,
   BingoHostStartsGame,
   DEFAULT_BINGO_GAME_CONFIGURATION,
-  BingoCallerId
+  BingoCallerId,
+  isCallerBingoCardControlDisabled
 } from "~/game-definitions/bingo/engine/bingo-engine";
 import { 
   Typography, 
@@ -25,12 +26,13 @@ import {
   Chip
 } from "@bfg-engine/ui/bfg-ui";
 import { GameHostComponentProps } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
-
 export const HostConfigurationView = (props: GameHostComponentProps<BingoGameState, BingoHostAction>) => {
   const { gameState, onHostAction } = props;
   const configuration = gameState.configuration;
   const canStartGame = configuration.canStartGame;
 
+  // Use engine function to check if caller bingo card control should be disabled
+  const isCallerBingoCardDisabled = isCallerBingoCardControlDisabled(gameState);
 
   const handleConfigurationChange = (field: keyof BingoGameConfiguration, value: any) => {
     // if (!onHostAction) {
@@ -123,7 +125,7 @@ export const HostConfigurationView = (props: GameHostComponentProps<BingoGameSta
     return callerSeat.replace('p', 'Player ');
   };
 
-  const formatAutoCallInterval = (intervalMs: number) => {
+  const formatMinCallInterval = (intervalMs: number) => {
     const seconds = Math.round(intervalMs / 1000);
     return `${intervalMs}ms (${seconds}s)`;
   };
@@ -169,7 +171,7 @@ export const HostConfigurationView = (props: GameHostComponentProps<BingoGameSta
         <Stack spacing={3} style={{ padding: '20px' }}>
           {/* Caller Seat Configuration */}
           <FormControl fullWidth>
-            <FormLabel>Select Designated Caller</FormLabel>
+            <FormLabel>Designate Caller</FormLabel>
             <Stack spacing={2}>
               
               <Stack direction="row" spacing={1} style={{ flexWrap: 'wrap', gap: '8px' }}>
@@ -231,45 +233,33 @@ export const HostConfigurationView = (props: GameHostComponentProps<BingoGameSta
                 </Typography>
               )}
             </Stack>
-            {/* <FormHelperText>
-              {configuration.callerSeat 
-                ? "Only this player can call numbers" 
-                : "Any player can call numbers"
-              }
-            </FormHelperText> */}
           </FormControl>
 
-          {/* Auto Call Interval Configuration */}
           <FormControl fullWidth>
-            <FormLabel>Auto Call Interval</FormLabel>
+            <FormLabel>Minimum Call Interval</FormLabel>
             
-            {/* Slider Component */}
+            {/* Slider Component with Speech Bubble */}
             <Slider
-              value={configuration.autoCallIntervalInMs}
-              min={AUTO_CALL_INTERVAL_MIN}
-              max={AUTO_CALL_INTERVAL_MAX}
+              value={configuration.minCallIntervalInMs}
+              min={MIN_CALL_INTERVAL_MIN}
+              max={MIN_CALL_INTERVAL_MAX}
               step={1000}
               marks={[
-                { value: AUTO_CALL_INTERVAL_MIN, label: `${AUTO_CALL_INTERVAL_MIN/1000}s` },
+                { value: MIN_CALL_INTERVAL_MIN, label: `${MIN_CALL_INTERVAL_MIN/1000}s` },
                 { value: 10000, label: '10s' },
                 { value: 30000, label: '30s' },
-                { value: AUTO_CALL_INTERVAL_MAX, label: `${AUTO_CALL_INTERVAL_MAX/1000}s` }
+                { value: MIN_CALL_INTERVAL_MAX, label: `${MIN_CALL_INTERVAL_MAX/1000}s` }
               ]}
-              valueLabelDisplay="auto"
-              valueLabelFormat={(value) => `${value/1000}s`}
-              onChange={(_, value) => handleConfigurationChange('autoCallIntervalInMs', value)}
+              valueLabelDisplay="off"
+              showSpeechBubble={true}
+              speechBubbleTimeout={2000}
+              valueLabelFormat={(value) => formatMinCallInterval(value)}
+              onChange={(_, value) => handleConfigurationChange('minCallIntervalInMs', value)}
               color="primary"
             />
             
-            {/* Number Input */}
-            {/* <TextField
-              type="number"
-              value={configuration.autoCallIntervalInMs}
-              onChange={(e) => handleConfigurationChange('autoCallIntervalInMs', parseInt(e.target.value))}
-              helperText={`Range: ${AUTO_CALL_INTERVAL_MIN}-${AUTO_CALL_INTERVAL_MAX}ms`}
-            /> */}
             <FormHelperText>
-              How often numbers are automatically called ({formatAutoCallInterval(configuration.autoCallIntervalInMs)})
+              Minimum interval between calls ({formatMinCallInterval(configuration.minCallIntervalInMs)})
             </FormHelperText>
           </FormControl>
 
@@ -313,6 +303,106 @@ export const HostConfigurationView = (props: GameHostComponentProps<BingoGameSta
               {configuration.loseForFailedBingoCalls 
                 ? "Players lose the game if they claim bingo incorrectly"
                 : "Players can claim bingo without penalty for incorrect claims"
+              }
+            </FormHelperText>
+          </FormControl>
+
+          {/* Caller Has Bingo Card Configuration */}
+          <FormControl fullWidth>
+            <FormLabel>Caller Bingo Card</FormLabel>
+            <Stack 
+              direction="row" 
+              spacing={2} 
+              alignItems="center"
+              onClick={() => !isCallerBingoCardDisabled && handleConfigurationChange('callerHasBingoCard', !configuration.callerHasBingoCard)}
+              style={{
+                cursor: isCallerBingoCardDisabled ? 'not-allowed' : 'pointer',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                border: '2px solid transparent',
+                transition: 'all 0.2s ease-in-out',
+                backgroundColor: isCallerBingoCardDisabled 
+                  ? '#f5f5f5' 
+                  : configuration.callerHasBingoCard ? '#e3f2fd' : '#f5f5f5',
+                borderColor: isCallerBingoCardDisabled 
+                  ? '#e0e0e0' 
+                  : configuration.callerHasBingoCard ? '#1976d2' : '#e0e0e0',
+                userSelect: 'none',
+                opacity: isCallerBingoCardDisabled ? 0.6 : 1
+              }}
+              onMouseEnter={(e) => {
+                if (!isCallerBingoCardDisabled) {
+                  e.currentTarget.style.backgroundColor = configuration.callerHasBingoCard ? '#bbdefb' : '#eeeeee';
+                  e.currentTarget.style.borderColor = configuration.callerHasBingoCard ? '#1565c0' : '#bdbdbd';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isCallerBingoCardDisabled) {
+                  e.currentTarget.style.backgroundColor = configuration.callerHasBingoCard ? '#e3f2fd' : '#f5f5f5';
+                  e.currentTarget.style.borderColor = configuration.callerHasBingoCard ? '#1976d2' : '#e0e0e0';
+                }
+              }}
+            >
+              <Switch 
+                checked={configuration.callerHasBingoCard} 
+                disabled={isCallerBingoCardDisabled}
+                onChange={(e) => handleConfigurationChange('callerHasBingoCard', e.target.checked)}
+                style={{ pointerEvents: 'none' }}
+              />
+              <Typography variant="body1" style={{ fontWeight: '500' }}>
+                {configuration.callerHasBingoCard ? 'Enabled' : 'Disabled'}
+              </Typography>
+            </Stack>
+            <FormHelperText>
+              {isCallerBingoCardDisabled 
+                ? "Caller bingo card is automatically enabled when there are fewer than 2 players"
+                : configuration.callerHasBingoCard 
+                  ? "The caller will receive a bingo card and can play along"
+                  : "The caller will not receive a bingo card and only calls numbers"
+              }
+            </FormHelperText>
+          </FormControl>
+
+          {/* Show Called Number Hints Configuration */}
+          <FormControl fullWidth>
+            <FormLabel>Called Number Hints</FormLabel>
+            <Stack 
+              direction="row" 
+              spacing={2} 
+              alignItems="center"
+              onClick={() => handleConfigurationChange('showCalledBingoNumberHints', !configuration.showCalledBingoNumberHints)}
+              style={{
+                cursor: 'pointer',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                border: '2px solid transparent',
+                transition: 'all 0.2s ease-in-out',
+                backgroundColor: configuration.showCalledBingoNumberHints ? '#e3f2fd' : '#f5f5f5',
+                borderColor: configuration.showCalledBingoNumberHints ? '#1976d2' : '#e0e0e0',
+                userSelect: 'none'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = configuration.showCalledBingoNumberHints ? '#bbdefb' : '#eeeeee';
+                e.currentTarget.style.borderColor = configuration.showCalledBingoNumberHints ? '#1565c0' : '#bdbdbd';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = configuration.showCalledBingoNumberHints ? '#e3f2fd' : '#f5f5f5';
+                e.currentTarget.style.borderColor = configuration.showCalledBingoNumberHints ? '#1976d2' : '#e0e0e0';
+              }}
+            >
+              <Switch 
+                checked={configuration.showCalledBingoNumberHints} 
+                onChange={(e) => handleConfigurationChange('showCalledBingoNumberHints', e.target.checked)}
+                style={{ pointerEvents: 'none' }}
+              />
+              <Typography variant="body1" style={{ fontWeight: '500' }}>
+                {configuration.showCalledBingoNumberHints ? 'Enabled' : 'Disabled'}
+              </Typography>
+            </Stack>
+            <FormHelperText>
+              {configuration.showCalledBingoNumberHints 
+                ? "Called numbers will be highlighted on bingo cards to help players"
+                : "Called numbers will not be highlighted on bingo cards (harder mode)"
               }
             </FormHelperText>
           </FormControl>
@@ -395,10 +485,16 @@ export const HostConfigurationView = (props: GameHostComponentProps<BingoGameSta
               <strong>Caller Candidates:</strong> {formatCallerCandidates(configuration.callerCandidates).length > 0 ? formatCallerCandidates(configuration.callerCandidates).join(", ") : "None"}
             </Typography>
             <Typography variant="body2">
-              <strong>Auto Call Interval:</strong> {formatAutoCallInterval(configuration.autoCallIntervalInMs)}
+              <strong>Min Call Interval:</strong> {formatMinCallInterval(configuration.minCallIntervalInMs)}
             </Typography>
             <Typography variant="body2">
               <strong>Failed Bingo Penalty:</strong> {configuration.loseForFailedBingoCalls ? 'Yes' : 'No'}
+            </Typography>
+            <Typography variant="body2">
+              <strong>Caller Has Bingo Card:</strong> {configuration.callerHasBingoCard ? 'Yes' : 'No'}
+            </Typography>
+            <Typography variant="body2">
+              <strong>Called Number Hints:</strong> {configuration.showCalledBingoNumberHints ? 'Yes' : 'No'}
             </Typography>
           </Stack>
         </Stack>

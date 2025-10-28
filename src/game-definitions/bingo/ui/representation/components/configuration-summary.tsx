@@ -66,7 +66,7 @@ export const ConfigurationSummary = ({
             </Stack>
           </Stack>
           <Typography variant="body2">
-            <strong>Auto Call:</strong> {formatAutoCallInterval(config.autoCallIntervalInMs)}
+            <strong>Auto Call:</strong> {formatAutoCallInterval(config.minCallIntervalInMs)}
           </Typography>
           <Typography variant="body2">
             <strong>Failed Bingo Penalty:</strong> {config.loseForFailedBingoCalls ? 'Yes' : 'No'}

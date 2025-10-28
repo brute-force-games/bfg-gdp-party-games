@@ -74,6 +74,7 @@ export const PlayerGameOverView = ({ gameState, currentPlayerSeat }: PlayerCompo
                 marks={myMarks}
                 calledNumbers={gameState.calledNumbers}
                 gridSize="medium"
+                showCalledBingoNumberHints={gameState.configuration.showCalledBingoNumberHints}
               />
               {isEliminated && (
                 <Box style={{

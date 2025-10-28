@@ -94,6 +94,7 @@ export const HostGameOverView = ({ gameState }: GameHostComponentProps<BingoGame
                     marks={marks}
                     calledNumbers={gameState.calledNumbers}
                     gridSize="small"
+                    showCalledBingoNumberHints={gameState.configuration.showCalledBingoNumberHints}
                   />
                   {(isEliminated || isWinner) && (
                     <div style={{

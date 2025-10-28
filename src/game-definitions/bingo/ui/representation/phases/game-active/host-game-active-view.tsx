@@ -67,6 +67,7 @@ export const HostActiveGameView = ({ gameState }: GameHostComponentProps<BingoGa
                     marks={marks}
                     calledNumbers={gameState.calledNumbers}
                     gridSize="small"
+                    showCalledBingoNumberHints={gameState.configuration.showCalledBingoNumberHints}
                   />
                   {isEliminated && (
                     <div style={{

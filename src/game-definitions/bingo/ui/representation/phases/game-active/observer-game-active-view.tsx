@@ -72,6 +72,7 @@ export const ObserverActiveGameView = ({ gameState, observedPlayerSeat }: Observ
                     marks={marks}
                     calledNumbers={gameState.calledNumbers}
                     gridSize={observedPlayerSeat ? "medium" : "small"}
+                    showCalledBingoNumberHints={gameState.configuration.showCalledBingoNumberHints}
                   />
                   {isEliminated && (
                     <div style={{
