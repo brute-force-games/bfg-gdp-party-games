@@ -616,6 +616,21 @@ const applyBingoPlayerAction = async (
 }
 
 
+const getNextToActPlayers = (gameTable: GameTable, gameState: BingoGameState): GameTableSeat[] => {
+  if (gameState.isGameOver) {
+    return [];
+  }
+
+  const nextPlayersToAct = getActivePlayerSeatsForGameTable(gameTable);
+
+  return nextPlayersToAct;
+}
+
+const getPlayerDetailsLine = (_gameState: BingoGameState, playerSeat: GameTableSeat): React.ReactNode => {
+  return `Player ${playerSeat} is playing Bingo`;
+}
+
+
 export const BingoGameProcessor: IBfgAllPublicKnowledgeGameProcessor<
   BingoGameState,
   BingoPlayerAction,
@@ -626,4 +641,7 @@ export const BingoGameProcessor: IBfgAllPublicKnowledgeGameProcessor<
   createGameSpecificInitialState: createInitialGameState,
   applyPlayerAction: applyBingoPlayerAction,
   applyHostAction: applyBingoHostAction,
+
+  getNextToActPlayers,
+  getPlayerDetailsLine,
 }
