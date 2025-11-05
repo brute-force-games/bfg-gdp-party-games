@@ -637,6 +637,7 @@ export const BingoGameProcessor: IBfgAllPublicKnowledgeGameProcessor<
   BingoHostAction
 > = {
   gameTitle: BingoGameName,
+  
   createGameSpecificInitialAction: createInitialGameSpecificAction,
   createGameSpecificInitialState: createInitialGameState,
   applyPlayerAction: applyBingoPlayerAction,
@@ -644,4 +645,5 @@ export const BingoGameProcessor: IBfgAllPublicKnowledgeGameProcessor<
 
   getNextToActPlayers,
   getPlayerDetailsLine,
+  getAllPlayersPrivateKnowledge: () => null,
 }
