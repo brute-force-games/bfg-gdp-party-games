@@ -37,7 +37,7 @@ export const BingoObserverComponent = (props: ObserverComponentProps<BingoGameSt
 }
 
 
-export const BingoPlayerComponent = (props: PlayerComponentProps<BingoGameState, BingoPlayerAction>) => {
+export const BingoPlayerComponent = (props: PlayerComponentProps<BingoGameState, BingoPlayerAction, never>) => {
   if (!props.gameState.isGameStarted) {
     return (
       <PlayerConfigurationView

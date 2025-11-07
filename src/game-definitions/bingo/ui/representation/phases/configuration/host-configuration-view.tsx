@@ -69,20 +69,32 @@ export const HostConfigurationView = (props: GameHostComponentProps<BingoGameSta
     onHostAction(updateAction);
   };
 
-  const handleClearCallerCandidates = () => {
-    // handleConfigurationChange('callerSeat', undefined);
-    console.log('🎮 HOST SENDING CALLER CLEAR');
-
+  const handleClearCallerSelection = () => {
     const updatedConfiguration: BingoGameConfiguration = {
       ...configuration,
-      callerSeat: undefined,
+      callerSeat: null,
+    };
+    
+    const updateAction: BingoUpdateConfiguration = {
+      hostActionType: BINGO_GAME_TABLE_ACTION_UPDATE_CONFIGURATION,
+      source: 'host',
+      update: updatedConfiguration,
+    };
+
+    onHostAction(updateAction);
+  };
+
+  const handleClearCallerList = () => {
+    const updatedConfiguration: BingoGameConfiguration = {
+      ...configuration,
+      callerSeat: null,
       callerCandidates: [],
     };
     
     const updateAction: BingoUpdateConfiguration = {
       hostActionType: BINGO_GAME_TABLE_ACTION_UPDATE_CONFIGURATION,
       source: 'host',
-      update: updatedConfiguration
+      update: updatedConfiguration,
     };
 
     onHostAction(updateAction);
@@ -118,7 +130,7 @@ export const HostConfigurationView = (props: GameHostComponentProps<BingoGameSta
     onHostAction(startGameAction);
   };
 
-  const formatCallerSeat = (callerSeat: string | undefined) => {
+  const formatCallerSeat = (callerSeat: string | null) => {
     if (!callerSeat) {
       return "Caller not set";
     }
@@ -203,7 +215,7 @@ export const HostConfigurationView = (props: GameHostComponentProps<BingoGameSta
                 {configuration.callerSeat && (
                   <button
                     type="button"
-                    onClick={handleClearCallerCandidates}
+                    onClick={handleClearCallerSelection}
                     style={{ 
                       fontSize: '0.75rem',
                       fontWeight: '500',
@@ -217,6 +229,25 @@ export const HostConfigurationView = (props: GameHostComponentProps<BingoGameSta
                     }}
                   >
                     Clear Selection
+                  </button>
+                )}
+                {configuration.callerCandidates.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleClearCallerList}
+                    style={{ 
+                      fontSize: '0.75rem',
+                      fontWeight: '500',
+                      color: '#d32f2f',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      alignSelf: 'center'
+                    }}
+                  >
+                    Clear List
                   </button>
                 )}
               </Stack>

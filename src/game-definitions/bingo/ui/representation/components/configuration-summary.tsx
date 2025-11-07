@@ -10,7 +10,7 @@ export const ConfigurationSummary = ({
   config
 }: ConfigurationSummaryProps) => {
 
-  const formatCallerSeat = (callerSeat: string | undefined) => {
+  const formatCallerSeat = (callerSeat: string | null | undefined) => {
     if (!callerSeat) return "No caller designated";
     return `Caller: ${callerSeat.replace('seat-', 'Seat ').replace('-', ' ')}`;
   };

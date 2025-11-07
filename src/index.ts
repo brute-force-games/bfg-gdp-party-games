@@ -5,10 +5,10 @@ import { registerGame } from "@bfg-engine";
 import { BingoGameName, BingoGameDefinition } from "./game-definitions/bingo/game-box";
 import { BingoGameStateSchema, BingoPlayerActionSchema, BingoHostAction, BingoPlayerAction, BingoGameState, BingoGameProcessor } from "./game-definitions/bingo/engine/bingo-engine";
 import { BingoHostActionSchema } from "./game-definitions/bingo/engine/bingo-engine";
-import { BfgAllPublicKnowledgeGameEngineComponents } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
-import { BfgGameEngineMetadata } from "@bfg-engine/models/bfg-game-engines";
+import { BfgAllPublicKnowledgeGameEngineComponents, BfgPrivatePlayerKnowledgeImplStateSchema } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
 import { BingoHistoryComponent, BingoHostComponent, BingoObserverComponent, BingoPlayerComponent } from "./game-definitions/bingo/ui/bingo-components";
-import { createJsonZodObjectDataEncoder } from "@bfg-engine/models/game-engine/encoders";
+import { createPublicKnowledgeGameMetadata } from "@bfg-engine/game-metadata/metadata-factory";
+import { BfgGameEngineSchemas } from "@bfg-engine/models/game-engine/bfg-game-engine-schemas";
 
 
 const BingoGameComponents: BfgAllPublicKnowledgeGameEngineComponents<
@@ -23,17 +23,22 @@ const BingoGameComponents: BfgAllPublicKnowledgeGameEngineComponents<
 }
 
 
-const BingoGameMetadata: BfgGameEngineMetadata<BingoGameState, BingoPlayerAction, BingoHostAction> = {
-  gameTitle: BingoGameName,
-  definition: BingoGameDefinition,
-
-  gameSpecificStateEncoder: createJsonZodObjectDataEncoder(BingoGameStateSchema),
-  playerActionEncoder: createJsonZodObjectDataEncoder(BingoPlayerActionSchema),
-  hostActionEncoder: createJsonZodObjectDataEncoder(BingoHostActionSchema),
-
-  engine: BingoGameProcessor,
-  components: BingoGameComponents,
+const BingoGameSchemas: BfgGameEngineSchemas = {
+  hostGameStateSchema: BingoGameStateSchema,
+  publicGameStateSchema: BingoGameStateSchema,
+  playerActionSchema: BingoPlayerActionSchema,
+  hostActionSchema: BingoHostActionSchema,
+  privatePlayerKnowledgeSchema: BfgPrivatePlayerKnowledgeImplStateSchema,
 };
+
+
+const BingoGameMetadata = createPublicKnowledgeGameMetadata(
+  BingoGameName,
+  BingoGameDefinition,
+  BingoGameSchemas,
+  BingoGameProcessor,
+  BingoGameComponents
+);
 
 /**
  * Initialize and register all party games with the BFG Engine

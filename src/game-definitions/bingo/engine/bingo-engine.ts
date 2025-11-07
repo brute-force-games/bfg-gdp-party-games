@@ -36,7 +36,7 @@ export const MIN_CALL_INTERVAL_MAX = 60000;
 
 
 export const BingoGameConfigurationSchema = z.object({
-  callerSeat: BingoCallerIdSchema.optional(),
+  callerSeat: BingoCallerIdSchema.nullable(),
   callerHasBingoCard: z.boolean(),
   minCallIntervalInMs: z.number()
     .int().min(MIN_CALL_INTERVAL_MIN).max(MIN_CALL_INTERVAL_MAX),
@@ -167,7 +167,7 @@ export type BingoHostAction = z.infer<typeof BingoHostActionSchema>;
 
 
 export const DEFAULT_BINGO_GAME_CONFIGURATION: BingoGameConfiguration = {
-  callerSeat: undefined,
+  callerSeat: null,
   callerHasBingoCard: true,
   callerCandidates: [],
   minCallIntervalInMs: 5000,
@@ -307,7 +307,7 @@ const createInitialGameState = (
 
 
 const canStartGame = (configuration: BingoGameConfiguration): boolean => {
-  return configuration.callerSeat !== undefined;
+  return configuration.callerSeat !== null;
 }
 
 const validateCallerBingoCardConfiguration = (
@@ -344,7 +344,6 @@ const applyBingoHostAction = async (
 ): Promise<GameTableActionResult<BingoGameState>> => {
 
   if (gameAction.hostActionType === BINGO_GAME_TABLE_ACTION_UPDATE_CONFIGURATION) {
-    console.log("HOST ACTION - UPDATE CONFIGURATION - GAME ACTION", gameAction);
     const activePlayerSeats = getActivePlayerSeatsForGameTable(_tableState);
     
     let updatedConfiguration = {
@@ -359,7 +358,7 @@ const applyBingoHostAction = async (
     if (updatedConfiguration.callerSeat && 
        !updatedConfiguration.callerCandidates.includes(updatedConfiguration.callerSeat))
     {
-      updatedConfiguration.callerSeat = undefined;
+      updatedConfiguration.callerSeat = null;
     }
 
     const summary = `Configuration updated by host: ${JSON.stringify(updatedConfiguration)}`;
@@ -375,7 +374,7 @@ const applyBingoHostAction = async (
 
   if (gameAction.hostActionType === BINGO_GAME_TABLE_ACTION_HOST_STARTS_GAME) {
     return {
-      tablePhase: 'table-phase-game-complete-with-winners',
+      tablePhase: 'table-phase-game-in-progress',
       gameSpecificState: {
         ...gameState,
         isGameStarted: true,

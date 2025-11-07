@@ -5,8 +5,9 @@ import { BingoCard } from "../../components/bingo-card";
 import { Container, Stack, Typography } from "@bfg-engine/ui/bfg-ui";
 
 
-export const HostActiveGameView = ({ gameState }: GameHostComponentProps<BingoGameState, BingoHostAction>) => {
-
+export const HostActiveGameView = (props: GameHostComponentProps<BingoGameState, BingoHostAction>) => {
+  const { gameState } = props;
+  
   // Get all players (including eliminated ones)
   const allPlayers = Object.entries(gameState.playerCards)
     .filter(([_, card]) => card !== null)
