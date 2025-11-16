@@ -1,5 +1,5 @@
 import { GameHostComponentProps } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
-import { BingoGameState, BingoHostAction } from "~/game-definitions/bingo/engine/bingo-engine";
+import { BingoGameState, BingoHostAction } from "../../../../engine/bingo-engine";
 import { CalledBingoNumbersGrid } from "../../components/called-bingo-numbers-grid";
 import { BingoCard } from "../../components/bingo-card";
 import { Container, Stack, Typography } from "@bfg-engine/ui/bfg-ui";

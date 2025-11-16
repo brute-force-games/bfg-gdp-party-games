@@ -3,7 +3,7 @@ import {
   BingoGameState,
   BingoPlayerAction,
   BingoUpdateCallerCandidate,
-} from "~/game-definitions/bingo/engine/bingo-engine";
+} from "../../../../engine/bingo-engine";
 import { 
   Typography, 
   Stack, 
@@ -17,7 +17,7 @@ export const PlayerConfigurationView = ({
   gameState,
   currentPlayerSeat,
   onPlayerAction
-}: PlayerComponentProps<BingoGameState, BingoPlayerAction>) => {
+}: PlayerComponentProps<BingoGameState, BingoPlayerAction, null>) => {
   const config = gameState.configuration;
   
   const handlePlayerCallerCandidateChange = (checked: boolean) => {

@@ -10,7 +10,7 @@ export const GameStatistics = ({ gameState, minWidth = "400px" }: GameStatistics
   // Calculate player statistics
   const allPlayers = Object.entries(gameState.playerCards)
     .filter(([_, card]) => card !== null)
-    .map(([seat, card]) => ({
+    .map(([seat, _card]) => ({
       seat: seat as keyof typeof gameState.playerCards,
       isEliminated: gameState.eliminatedPlayers.includes(seat as keyof typeof gameState.playerCards),
     }));
@@ -34,7 +34,7 @@ export const GameStatistics = ({ gameState, minWidth = "400px" }: GameStatistics
           <Typography variant="h4" color="primary">
             {gameState.calledNumbers.length}
           </Typography>
-          <Typography variant="body2" color="textSecondary">
+          <Typography variant="body2" color="secondary">
             Numbers Called
           </Typography>
         </Box>
@@ -42,7 +42,7 @@ export const GameStatistics = ({ gameState, minWidth = "400px" }: GameStatistics
           <Typography variant="h4" color="secondary">
             {activePlayers.length}
           </Typography>
-          <Typography variant="body2" color="textSecondary">
+          <Typography variant="body2" color="secondary">
             Active Players
           </Typography>
         </Box>
@@ -50,15 +50,15 @@ export const GameStatistics = ({ gameState, minWidth = "400px" }: GameStatistics
           <Typography variant="h4" color="error">
             {eliminatedPlayers.length}
           </Typography>
-          <Typography variant="body2" color="textSecondary">
+          <Typography variant="body2" color="secondary">
             Eliminated
           </Typography>
         </Box>
         <Box>
-          <Typography variant="h4" color="info">
+          <Typography variant="h4" color="secondary">
             {allPlayers.length}
           </Typography>
-          <Typography variant="body2" color="textSecondary">
+          <Typography variant="body2" color="secondary">
             Total Players
           </Typography>
         </Box>

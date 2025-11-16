@@ -1,5 +1,5 @@
 import { ObserverComponentProps } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
-import { BingoGameState } from "~/game-definitions/bingo/engine/bingo-engine";
+import { BingoGameState } from "../../../../engine/bingo-engine";
 import { CalledBingoNumbersGrid } from "../../components/called-bingo-numbers-grid";
 import { BingoCard } from "../../components/bingo-card";
 import { GameOverHeader } from "../../../components/game-over-header";

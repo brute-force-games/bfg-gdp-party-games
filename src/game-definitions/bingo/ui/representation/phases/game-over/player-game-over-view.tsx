@@ -1,5 +1,5 @@
 import { PlayerComponentProps } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
-import { BingoGameState, BingoPlayerAction } from "~/game-definitions/bingo/engine/bingo-engine";
+import { BingoGameState, BingoPlayerAction } from "../../../../engine/bingo-engine";
 import { CalledBingoNumbersGrid } from "../../components/called-bingo-numbers-grid";
 import { BingoCard } from "../../components/bingo-card";
 import { GameOverHeader } from "../../../components/game-over-header";
@@ -8,7 +8,9 @@ import { FinalResultsSummary } from "../../../components/final-results-summary";
 import { Container, Box, Stack, Typography } from "@bfg-engine/ui/bfg-ui";
 
 
-export const PlayerGameOverView = ({ gameState, currentPlayerSeat }: PlayerComponentProps<BingoGameState, BingoPlayerAction>) => {
+export const PlayerGameOverView = (props: PlayerComponentProps<BingoGameState, BingoPlayerAction, null>) => {
+  const { gameState, currentPlayerSeat } = props;
+  
   const myCard = gameState.playerCards[currentPlayerSeat];
   const myMarks = gameState.playerMarks[currentPlayerSeat];
   const isEliminated = gameState.eliminatedPlayers.includes(currentPlayerSeat);

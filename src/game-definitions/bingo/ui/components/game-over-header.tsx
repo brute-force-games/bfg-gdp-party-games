@@ -104,7 +104,7 @@ export const GameOverHeader = ({
         {getGameOutcomeMessage()}
       </Typography>
       {gameState.outcomeSummary && (
-        <Typography variant="body1" color="textSecondary">
+        <Typography variant="body1" color="secondary">
           {gameState.outcomeSummary}
         </Typography>
       )}

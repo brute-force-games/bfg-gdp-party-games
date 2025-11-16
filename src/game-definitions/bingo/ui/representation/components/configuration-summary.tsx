@@ -1,5 +1,5 @@
 import { Card, Stack, Typography, Chip } from "@bfg-engine";
-import { BingoGameConfiguration } from "~/game-definitions/bingo/engine/bingo-engine";
+import { BingoGameConfiguration } from "../../../engine/bingo-engine";
 
 
 interface ConfigurationSummaryProps {

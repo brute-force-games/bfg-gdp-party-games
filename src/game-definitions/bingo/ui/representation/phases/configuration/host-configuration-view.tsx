@@ -11,7 +11,7 @@ import {
   DEFAULT_BINGO_GAME_CONFIGURATION,
   BingoCallerId,
   isCallerBingoCardControlDisabled
-} from "~/game-definitions/bingo/engine/bingo-engine";
+} from "../../../../engine/bingo-engine";
 import { 
   Typography, 
   Card, 

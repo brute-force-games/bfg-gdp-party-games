@@ -1,8 +1,5 @@
-import { BingoRepresentationProps } from "../../types";
 
-
-export const PlayersBar = (props: BingoRepresentationProps) => {
-  const { gameState } = props;
+export const PlayersBar = (_props: any) => {
 
   return (
     <div>

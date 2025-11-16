@@ -1,7 +1,7 @@
 import { Typography, Stack, } from "@bfg-engine/ui/bfg-ui";
 import { ConfigurationSummary } from "../../components/configuration-summary";
 import { ObserverComponentProps } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
-import { BingoGameState } from "~/game-definitions/bingo/engine/bingo-engine";
+import { BingoGameState } from "../../../../engine/bingo-engine";
 
 
 export const ObserverConfigurationView = ({ gameState }: ObserverComponentProps<BingoGameState>) => {

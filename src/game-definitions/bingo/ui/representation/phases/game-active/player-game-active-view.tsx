@@ -1,11 +1,12 @@
 import { PlayerComponentProps } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
-import { BingoGameState, BingoPlayerAction, BINGO_GAME_TABLE_ACTION_CALL_NUMBER, BINGO_GAME_TABLE_ACTION_CLAIM_BINGO, BINGO_GAME_TABLE_ACTION_MARK_NUMBER, BingoNumber } from "~/game-definitions/bingo/engine/bingo-engine";
+import { BingoGameState, BingoPlayerAction, BINGO_GAME_TABLE_ACTION_CALL_NUMBER, BINGO_GAME_TABLE_ACTION_CLAIM_BINGO, BINGO_GAME_TABLE_ACTION_MARK_NUMBER, BingoNumber } from "../../../../engine/bingo-engine";
 import { CalledBingoNumbersGrid } from "../../components/called-bingo-numbers-grid";
 import { BingoCard } from "../../components/bingo-card";
 import { Container, Button, Box, Stack } from "@bfg-engine/ui/bfg-ui";
 
 
-export const PlayerActiveGameView = ({ gameState, currentPlayerSeat, onPlayerAction }: PlayerComponentProps<BingoGameState, BingoPlayerAction>) => {
+export const PlayerActiveGameView = (props: PlayerComponentProps<BingoGameState, BingoPlayerAction, null>) => {
+  const { gameState, currentPlayerSeat, onPlayerAction } = props;
 
   const myCard = gameState.playerCards[currentPlayerSeat];
   const myMarks = gameState.playerMarks[currentPlayerSeat];

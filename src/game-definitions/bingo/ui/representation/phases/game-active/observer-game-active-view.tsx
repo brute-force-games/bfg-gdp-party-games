@@ -1,11 +1,12 @@
 import { ObserverComponentProps } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
-import { BingoGameState } from "~/game-definitions/bingo/engine/bingo-engine";
+import { BingoGameState } from "../../../../engine/bingo-engine";
 import { CalledBingoNumbersGrid } from "../../components/called-bingo-numbers-grid";
 import { BingoCard } from "../../components/bingo-card";
 import { Container, Stack, Typography } from "@bfg-engine/ui/bfg-ui";
 
 
-export const ObserverActiveGameView = ({ gameState, observedPlayerSeat }: ObserverComponentProps<BingoGameState>) => {
+export const ObserverActiveGameView = (props: ObserverComponentProps<BingoGameState>) => {
+  const { gameState, observedPlayerSeat } = props;
 
   // Get all players (including eliminated ones)
   const allPlayers = Object.entries(gameState.playerCards)

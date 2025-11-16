@@ -1,13 +1,12 @@
 import { z } from "zod";
 import { GameTableSeatSchema, GameTableActionResult, } from "@bfg-engine";
-import { PLAYER_SEATS, GameTableSeat } from "@bfg-engine/models/game-table/game-table";
-import { BingoGameName } from "../game-box";
+import { ALL_PLAYER_SEATS, GameTableSeat } from "@bfg-engine/models/game-table/game-table";
 import { GameTable } from "@bfg-engine/models/game-table/game-table";
-import { BfgGameImplHostActionSchema, BfgGameImplPlayerActionSchema, BfgPublicGameImplStateSchema } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
-import { IBfgAllPublicKnowledgeGameProcessor } from "@bfg-engine/models/game-engine/bfg-game-engine-processor";
+import { BfgGameImplHostActionSchema, BfgGameImplPlayerActionSchema } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
 import { GameLobby } from "@bfg-engine/models/p2p-lobby";
 import { BfgGameSpecificTableAction } from "@bfg-engine/models/game-table/game-table-action";
 import { getActivePlayerSeatsForGameTable } from "@bfg-engine/ops/game-table-ops/player-seat-utils";
+import { BfgGameStateForWatcherSchema } from "../../../../../bfg-engine/src/game-metadata/metadata-types/game-state-types";
 
 
 // Bingo number range is 1-75
@@ -52,7 +51,7 @@ export const BingoGameConfigurationSchema = z.object({
 export type BingoGameConfiguration = z.infer<typeof BingoGameConfigurationSchema>;
 
 
-export const BingoGameStateSchema = BfgPublicGameImplStateSchema.extend({
+export const BingoGameStateSchema = BfgGameStateForWatcherSchema.extend({
   configuration: BingoGameConfigurationSchema,
 
   nextToActPlayers: z.array(GameTableSeatSchema),
@@ -74,7 +73,7 @@ export const BingoGameStateSchema = BfgPublicGameImplStateSchema.extend({
   isGameOver: z.boolean(),
   winner: GameTableSeatSchema.optional(),
   outcomeSummary: z.string().optional(),
-}).describe('Bingo');
+}).describe('BingoGameState');
 
 export type BingoGameState = z.infer<typeof BingoGameStateSchema>;
 
@@ -285,7 +284,7 @@ const createInitialGameState = (
     playerMarks[seat] = createInitialMarks();
   });
 
-  const nonPlayerSeats = PLAYER_SEATS.filter(seat => !playerSeats.includes(seat));
+  const nonPlayerSeats = ALL_PLAYER_SEATS.filter(seat => !playerSeats.includes(seat));
   nonPlayerSeats.forEach(seat => {
     playerCards[seat] = null;
     playerMarks[seat] = null;
@@ -341,7 +340,7 @@ const applyBingoHostAction = async (
   _tableState: GameTable,
   gameState: BingoGameState,
   gameAction: BingoHostAction,
-): Promise<GameTableActionResult<BingoGameState>> => {
+): Promise<GameTableActionResult<'host', BingoGameState, null>> => {
 
   if (gameAction.hostActionType === BINGO_GAME_TABLE_ACTION_UPDATE_CONFIGURATION) {
     const activePlayerSeats = getActivePlayerSeatsForGameTable(_tableState);
@@ -364,10 +363,12 @@ const applyBingoHostAction = async (
     const summary = `Configuration updated by host: ${JSON.stringify(updatedConfiguration)}`;
     return {
       tablePhase: 'table-phase-game-in-progress',
+      actionSource: 'host',
       gameSpecificState: {
         ...gameState,
         configuration: updatedConfiguration,
       },
+      gameSpecificActionOutcome: null,
       gameSpecificStateSummary: summary,
     }
   }
@@ -375,12 +376,14 @@ const applyBingoHostAction = async (
   if (gameAction.hostActionType === BINGO_GAME_TABLE_ACTION_HOST_STARTS_GAME) {
     return {
       tablePhase: 'table-phase-game-in-progress',
+      actionSource: 'host',
       gameSpecificState: {
         ...gameState,
         isGameStarted: true,
         winner: undefined,
         outcomeSummary: 'Game started',
       },
+      gameSpecificActionOutcome: null,
       gameSpecificStateSummary: 'Game started',
     };
   }
@@ -388,7 +391,9 @@ const applyBingoHostAction = async (
 
   return {
     tablePhase: 'table-phase-error',
+    actionSource: 'host',
     gameSpecificState: gameState,
+    gameSpecificActionOutcome: null,
     gameSpecificStateSummary: `Error - invalid game action`,
   };
 }
@@ -398,7 +403,7 @@ const applyBingoPlayerAction = async (
   _tableState: GameTable,
   gameState: BingoGameState,
   gameAction: BingoPlayerAction,
-): Promise<GameTableActionResult<BingoGameState>> => {
+): Promise<GameTableActionResult<'player', BingoGameState, null>> => {
 
   console.log("APPLY BINGO GAME ACTION - GAME STATE", gameState);
   console.log("APPLY BINGO GAME ACTION - GAME ACTION", gameAction);
@@ -422,10 +427,12 @@ const applyBingoPlayerAction = async (
 
     return {
       tablePhase: 'table-phase-game-in-progress',
+      actionSource: 'player',
       gameSpecificState: {
         ...gameState,
         configuration: updatedConfiguration,
       },
+      gameSpecificActionOutcome: null,
       gameSpecificStateSummary: summary,
     }
   }
@@ -436,7 +443,9 @@ const applyBingoPlayerAction = async (
       const summary = `Number ${gameAction.calledNumber} was already called`;
       return {
         tablePhase: 'table-phase-game-in-progress',
+        actionSource: 'player',
         gameSpecificState: gameState,
+        gameSpecificActionOutcome: null,
         gameSpecificStateSummary: summary,
       };
     }
@@ -453,7 +462,9 @@ const applyBingoPlayerAction = async (
 
       return {
         tablePhase: 'table-phase-game-in-progress',
+        actionSource: 'player',
         gameSpecificState: gameState,
+        gameSpecificActionOutcome: null,
         gameSpecificStateSummary: summary,
       };
     }
@@ -463,12 +474,14 @@ const applyBingoPlayerAction = async (
 
     return {
       tablePhase: 'table-phase-game-in-progress',
+      actionSource: 'player',
       gameSpecificState: {
         ...gameState,
         calledNumbers: [...gameState.calledNumbers, gameAction.calledNumber],
         lastCalledNumberTimestamp,
         outcomeSummary: summary,
       },
+      gameSpecificActionOutcome: null,
       gameSpecificStateSummary: summary,
     }
   } 
@@ -481,7 +494,9 @@ const applyBingoPlayerAction = async (
       const summary = `Player ${gameAction.seat} data not found`;
       return {
         tablePhase: 'table-phase-error',
+        actionSource: 'player',
         gameSpecificState: gameState,
+        gameSpecificActionOutcome: null,
         gameSpecificStateSummary: summary,
       };
     }
@@ -505,7 +520,9 @@ const applyBingoPlayerAction = async (
       const summary = `Player ${gameAction.seat} tried to mark ${gameAction.markedNumber} but it's not on their card`;
       return {
         tablePhase: 'table-phase-game-in-progress',
+        actionSource: 'player',
         gameSpecificState: gameState,
+        gameSpecificActionOutcome: null,
         gameSpecificStateSummary: summary,
       };
     }
@@ -514,6 +531,7 @@ const applyBingoPlayerAction = async (
 
     return {
       tablePhase: 'table-phase-game-in-progress',
+      actionSource: 'player',
       gameSpecificState: {
         ...gameState,
         playerMarks: {
@@ -522,6 +540,7 @@ const applyBingoPlayerAction = async (
         },
         outcomeSummary: summary,
       },
+      gameSpecificActionOutcome: null,
       gameSpecificStateSummary: summary,
     }
   }
@@ -533,7 +552,9 @@ const applyBingoPlayerAction = async (
       const summary = `Player ${gameAction.seat} data not found`;
       return {
         tablePhase: 'table-phase-error',
+        actionSource: 'player',
         gameSpecificState: gameState,
+        gameSpecificActionOutcome: null,
         gameSpecificStateSummary: summary,
       };
     }
@@ -543,12 +564,14 @@ const applyBingoPlayerAction = async (
 
       return {
         tablePhase: 'table-phase-game-complete-with-winners',
+        actionSource: 'player',
         gameSpecificState: {
           ...gameState,
           isGameOver: true,
           winner: gameAction.seat,
           outcomeSummary: summary,
         },
+        gameSpecificActionOutcome: null,
         gameSpecificStateSummary: summary,
       }
     } else {
@@ -568,6 +591,7 @@ const applyBingoPlayerAction = async (
         
         return {
           tablePhase: 'table-phase-game-complete-no-winners',
+          actionSource: 'player',
           gameSpecificState: {
             ...gameState,
             eliminatedPlayers,
@@ -575,6 +599,7 @@ const applyBingoPlayerAction = async (
             winner: undefined, // No winner when all players are eliminated
             outcomeSummary: summary,
           },
+          gameSpecificActionOutcome: null,
           gameSpecificStateSummary: summary,
         }
       }
@@ -585,11 +610,13 @@ const applyBingoPlayerAction = async (
 
       return {
         tablePhase: 'table-phase-game-in-progress',
+        actionSource: 'player',
         gameSpecificState: {
           ...gameState,
           eliminatedPlayers,
           outcomeSummary: summary,
         },
+        gameSpecificActionOutcome: null,
         gameSpecificStateSummary: summary,
       }
     }
@@ -598,18 +625,22 @@ const applyBingoPlayerAction = async (
   if (gameAction.playerActionType === BINGO_GAME_TABLE_ACTION_CANCEL_GAME) {
     return {
       tablePhase: 'table-phase-game-abandoned',
+      actionSource: 'player',
       gameSpecificState: {
         ...gameState,
         isGameOver: true,
         outcomeSummary: gameAction.cancellationReason,
       },
+        gameSpecificActionOutcome: null,
       gameSpecificStateSummary: gameAction.cancellationReason,
     }
   }
 
   return {
     tablePhase: 'table-phase-error',
+    actionSource: 'player',
     gameSpecificState: gameState,
+    gameSpecificActionOutcome: null,
     gameSpecificStateSummary: `Error - invalid game action`,
   };
 }
@@ -630,19 +661,33 @@ const getPlayerDetailsLine = (_gameState: BingoGameState, playerSeat: GameTableS
 }
 
 
-export const BingoGameProcessor: IBfgAllPublicKnowledgeGameProcessor<
-  BingoGameState,
-  BingoPlayerAction,
-  BingoHostAction
-> = {
-  gameTitle: BingoGameName,
+// export const BingoGameProcessor: IBfgGameProcessor<
+//   BingoGameState,
+//   BingoGameState,
+//   BingoPlayerAction,
+//   null,
+//   BingoHostAction,
+//   null,
+//   null
+// > = {
+//   gameTitle: BingoGameName,
   
-  createGameSpecificInitialAction: createInitialGameSpecificAction,
-  createGameSpecificInitialState: createInitialGameState,
-  applyPlayerAction: applyBingoPlayerAction,
-  applyHostAction: applyBingoHostAction,
+//   createGameSpecificInitialAction: createInitialGameSpecificAction,
+//   createGameSpecificInitialState: createInitialGameState,
+//   applyPlayerAction: applyBingoPlayerAction,
+//   applyHostAction: applyBingoHostAction,
 
-  getNextToActPlayers,
-  getPlayerDetailsLine,
-  getAllPlayersPrivateKnowledge: () => null,
-}
+//   summarizeGameAction: (gameAction: DbGameTableAction) => `Bingo action: ${gameAction.actionType}`,
+
+//   getNextToActPlayers,
+//   getPlayerDetailsLine,
+//   getAllPlayersPrivateKnowledge: () => null,
+// }
+
+export const BingoGameProcessor = createPublicKnowledgeGameProcessor(
+  // BingoGameName,
+  // BingoGameDefinition,
+  // BingoGameSchemas,
+  // BingoGameProcessor,
+  // BingoGameComponents
+);
